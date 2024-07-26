@@ -39,4 +39,13 @@ public class AppUser {
 
     @Column(name = "picture")
     private String picture;
+
+    @Override
+    public String toString() {
+        return "AppUser{" +
+                "username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
 }
