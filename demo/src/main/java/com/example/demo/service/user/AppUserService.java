@@ -8,6 +8,7 @@ import com.example.demo.dto.user.UserRegisterDTO;
 import com.example.demo.exception.CustomHttpException;
 import com.example.demo.model.user.AppUser;
 import com.example.demo.model.user.AppUserRole;
+import com.example.demo.model.user.AppUserSex;
 import com.example.demo.repository.user.AppUserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -37,8 +38,7 @@ public class AppUserService {
     }
 
     private AppUser createAppUserFromUserDetailsDto(UserDetailsDTO userDto){
-        AppUser user = appUserRepository
-                .findAppUserByUsername(userDto.getUsername());
+        AppUser user = appUserRepository.findAppUserByUsername(userDto.getUsername());
 
         if(user == null) throw new CustomHttpException("Utilisateur introuvable!", HttpStatus.BAD_REQUEST);
 
@@ -66,6 +66,8 @@ public class AppUserService {
         String username = userRegisterDTO.getUsername();
         String email = userRegisterDTO.getEmail();
         String password = userRegisterDTO.getPassword();
+        LocalDate birthdate = userRegisterDTO.getBirthdate();
+        AppUserSex sex = AppUserSex.valueOf(userRegisterDTO.getSex());
 
         AppUser user = new AppUser();
         user.setUsername(username);
@@ -98,6 +100,8 @@ public class AppUserService {
         user.setEmail(userDetailsDTO.getEmail());
         user.setBiography(userDetailsDTO.getBiography());
         user.setPicture(userDetailsDTO.getPicture());
+        user.setBirthdate(userDetailsDTO.getBirthdate());
+        user.setSex(AppUserSex.valueOf(userDetailsDTO.getSex()));
         return appUserRepository.save(user);
     }
 

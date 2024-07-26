@@ -120,12 +120,22 @@ CREATE TABLE "app_user"
     "username"    VARCHAR(100)                   NOT NULL,
     "email"       VARCHAR(100)                   NOT NULL,
     "password"    VARCHAR(100)                   NOT NULL,
+    "birthdate"   DATE                           NOT NULL,
     "role"        SMALLINT                       NULL,
     "last_online" TIMESTAMP(0) WITHOUT TIME ZONE NULL,
     "biography"   TEXT                           NULL,
     "created_at"  DATE                           NOT NULL,
-    "picture"     VARCHAR(255)                   NULL
+    "picture"     VARCHAR(255)                   NULL,
+    "sex"         SMALLINT                       NULL
 );
+CREATE TABLE "sex"
+(
+    "id"        SMALLINT    NOT NULL,
+    "name"      VARCHAR(20)    NOT NULL
+);
+ALTER TABLE
+    "sex"
+    ADD PRIMARY KEY ("id");
 ALTER TABLE
     "app_user"
     ADD PRIMARY KEY ("id");
@@ -141,6 +151,9 @@ ALTER TABLE
 ALTER TABLE
     "app_user"
     ADD CONSTRAINT "app_user_role_foreign" FOREIGN KEY ("role") REFERENCES "app_user_role" ("id");
+ALTER TABLE
+    "app_user"
+    ADD CONSTRAINT "app_user_sex_foreign" FOREIGN KEY ("sex") REFERENCES "sex" ("id");
 ALTER TABLE
     "message"
     ADD CONSTRAINT "message_id_sender_foreign" FOREIGN KEY ("id_sender") REFERENCES "app_user" ("id");

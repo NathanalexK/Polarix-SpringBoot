@@ -25,6 +25,9 @@ public class AppUser {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "birthdate", nullable = false)
+    private LocalDate birthdate;
+
     @Column(name = "role", nullable = false)
     private AppUserRole role;
 
@@ -39,6 +42,9 @@ public class AppUser {
 
     @Column(name = "picture")
     private String picture;
+
+    @Column(name = "sex")
+    private AppUserSex sex;
 
     public boolean equals(AppUser user) {
         return this.getId() == user.getId();
