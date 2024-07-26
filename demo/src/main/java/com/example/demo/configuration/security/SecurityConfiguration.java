@@ -1,5 +1,6 @@
 package com.example.demo.configuration.security;
 
+import com.example.demo.model.user.AppUserRole;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,6 +29,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
+                .requestMatchers("/admin/**").hasAuthority(AppUserRole.ROLE_ADMIN.getAuthority())
                 .requestMatchers("/auth/**").permitAll()
                 .anyRequest().authenticated()
                 .and()

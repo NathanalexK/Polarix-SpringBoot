@@ -1,6 +1,10 @@
 package com.example.demo.service.user;
 
 import com.example.demo.configuration.security.JwtTokenProvider;
+import com.example.demo.dto.user.UserDetailsDTO;
+import com.example.demo.dto.user.UserLoginDTO;
+import com.example.demo.dto.user.UserPasswordDTO;
+import com.example.demo.dto.user.UserRegisterDTO;
 import com.example.demo.exception.CustomHttpException;
 import com.example.demo.model.user.AppUser;
 import com.example.demo.model.user.AppUserRole;
@@ -9,7 +13,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,11 +36,24 @@ public class AppUserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public String authenticate(String username, String password){
-        System.out.println(username);
-//        System.out.println(passwordEncoder.encode(password));
+    private AppUser createAppUserFromUserDetailsDto(UserDetailsDTO userDto){
+        AppUser user = appUserRepository
+                .findAppUserByUsername(userDto.getUsername());
+
+        if(user == null) throw new CustomHttpException("Utilisateur introuvable!", HttpStatus.BAD_REQUEST);
+
+        user.setUsername(userDto.getUsername());
+        user.setEmail(userDto.getEmail());
+        user.setBiography(userDto.getBiography());
+        user.setPicture(userDto.getPicture());
+        return user;
+    }
+
+    public String authenticate(UserLoginDTO userDto){
+        String username = userDto.getUsername();
+        String password = userDto.getPassword();
+
         AppUser user = appUserRepository.findAppUserByUsername(username);
-        System.out.println(user);
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
             return jwtTokenProvider.createToken(username, user.getRole());
@@ -43,8 +62,11 @@ public class AppUserService {
         }
     }
 
-//    @Transactional
-    public String register(String username, String email, String password) {
+    public String register(UserRegisterDTO userRegisterDTO) {
+        String username = userRegisterDTO.getUsername();
+        String email = userRegisterDTO.getEmail();
+        String password = userRegisterDTO.getPassword();
+
         AppUser user = new AppUser();
         user.setUsername(username);
         user.setEmail(email);
@@ -52,6 +74,43 @@ public class AppUserService {
         user.setRole(AppUserRole.ROLE_CLIENT);
         user.setCreatedAt(LocalDate.now());
         appUserRepository.save(user);
-        return this.authenticate(username, password);
+
+        return this.authenticate(new UserLoginDTO(username, password));
+    }
+
+    public UserDetailsDTO getAuthenticatedUserDetails(){
+        return new UserDetailsDTO(this.getAuthenticatedAppUser());
+    }
+
+    public AppUser getAuthenticatedAppUser()
+            throws RuntimeException {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        AppUser authenticatedUser = appUserRepository.findAppUserByUsername(auth.getName());
+
+        if(authenticatedUser != null)
+            return authenticatedUser;
+        throw new CustomHttpException("No account is logged in!", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public AppUser updateUserDetails(UserDetailsDTO userDetailsDTO){
+        AppUser user =  this.createAppUserFromUserDetailsDto(this.getAuthenticatedUserDetails());
+        user.setUsername(userDetailsDTO.getUsername());
+        user.setEmail(userDetailsDTO.getEmail());
+        user.setBiography(userDetailsDTO.getBiography());
+        user.setPicture(userDetailsDTO.getPicture());
+        return appUserRepository.save(user);
+    }
+
+    @Transactional
+    public String updateUserPassword(UserPasswordDTO userPasswordDTO){
+        AppUser appUser = this.getAuthenticatedAppUser();
+
+        if(passwordEncoder.matches(userPasswordDTO.getCurrentPassword(), appUser.getPassword())){
+            appUser.setPassword(passwordEncoder.encode(userPasswordDTO.getNewPassword()));
+            appUserRepository.save(appUser);
+            return this.authenticate(new UserLoginDTO(appUser.getUsername(), userPasswordDTO.getNewPassword()));
+        }
+
+        throw new CustomHttpException("Invalid Password!", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -23,8 +23,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserRegisterDTO userDto){
-        String token = appUserService.register(userDto.getUsername(), userDto.getEmail(), userDto.getPassword());
+    public ResponseEntity<String> register(@RequestBody UserRegisterDTO userRegisterDto){
+        String token = appUserService.register(userRegisterDto);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(token);
@@ -32,7 +32,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserLoginDTO userLoginDTO){
-        String token = appUserService.authenticate(userLoginDTO.getUsername(), userLoginDTO.getPassword());
+        String token = appUserService.authenticate(userLoginDTO);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(token);

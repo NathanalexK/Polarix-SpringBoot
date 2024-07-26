@@ -40,6 +40,10 @@ public class AppUser {
     @Column(name = "picture")
     private String picture;
 
+    public boolean equals(AppUser user) {
+        return this.getId() == user.getId();
+    }
+
     @Override
     public String toString() {
         return "AppUser{" +

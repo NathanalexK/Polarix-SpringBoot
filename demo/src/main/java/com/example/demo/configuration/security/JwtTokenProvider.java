@@ -25,12 +25,15 @@ public class JwtTokenProvider {
     @Value("${security.jwt.token.expire-length:3600000}")
     private long validityInMilliseconds = 3600000; // 1h
 
-    @Autowired
     private MyUserDetailsService myUserDetailsService;
 
     @PostConstruct
     protected void init() {
         this.secretKey = Base64.getEncoder().encodeToString(this.secretKey.getBytes());
+    }
+
+    public JwtTokenProvider(MyUserDetailsService muds){
+        this.myUserDetailsService = muds;
     }
 
     public String createToken(String username, AppUserRole role) {
