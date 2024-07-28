@@ -1,15 +1,20 @@
 package com.example.demo.model.user;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
 @Entity
-@Table(name = "friend")
+@Table(
+        name = "friend",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"id_sender", "id_receiver"})
+        }
+)
 public class Friend {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +28,9 @@ public class Friend {
     @JoinColumn(name = "id_receiver", nullable = false)
     private AppUser receiver;
 
-    @Column(name = "date")
-    private LocalDate date;
+    @Column(name = "date_send", nullable = false)
+    private LocalDate dateSend;
+
+    @Column(name = "date_confirm")
+    private LocalDate dateConfirm;
 }

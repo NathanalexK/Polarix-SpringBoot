@@ -54,10 +54,11 @@ ALTER TABLE
     ADD PRIMARY KEY ("id");
 CREATE TABLE "friend"
 (
-    "id"          bigserial NOT NULL,
-    "id_sender"   BIGINT    NOT NULL,
-    "id_receiver" BIGINT    NOT NULL,
-    "date"        DATE      NULL
+    "id"           bigserial NOT NULL,
+    "id_sender"    BIGINT    NOT NULL,
+    "id_receiver"  BIGINT    NOT NULL,
+    "date_send"    DATE      NOT NULL       DEFAULT current_date,
+    "date_confirm" DATE      NULL
 );
 ALTER TABLE
     "friend"
@@ -104,12 +105,12 @@ ALTER TABLE
     ADD PRIMARY KEY ("id");
 CREATE TABLE "message"
 (
-    "id"            bigserial   NOT NULL,
-    "id_sender"     BIGINT      NOT NULL,
-    "id_receiver"   BIGINT      NOT NULL,
-    "date_time"     TIMESTAMP   NOT NULL,
-    "type_content"  SMALLINT    NOT NULL,
-    "content"       TEXT        NOT NULL
+    "id"           bigserial NOT NULL,
+    "id_sender"    BIGINT    NOT NULL,
+    "id_receiver"  BIGINT    NOT NULL,
+    "date_time"    TIMESTAMP NOT NULL,
+    "type_content" SMALLINT  NOT NULL,
+    "content"      TEXT      NOT NULL
 );
 ALTER TABLE
     "message"
@@ -130,8 +131,8 @@ CREATE TABLE "app_user"
 );
 CREATE TABLE "sex"
 (
-    "id"        SMALLINT    NOT NULL,
-    "name"      VARCHAR(20)    NOT NULL
+    "id"   SMALLINT    NOT NULL,
+    "name" VARCHAR(20) NOT NULL
 );
 ALTER TABLE
     "sex"
@@ -199,3 +200,6 @@ ALTER TABLE
 ALTER TABLE
     "post"
     ADD CONSTRAINT "post_id_user_foreign" FOREIGN KEY ("id_user") REFERENCES "app_user" ("id");
+ALTER TABLE
+    "friend"
+    ADD CONSTRAINT "fiend_sender_receiver_unique" UNIQUE ("id_receiver", "id_sender");

@@ -21,25 +21,19 @@ public class AppUserController {
 
     @GetMapping("/details")
     public ResponseEntity<UserDetailsDTO> getUserDetails(){
-        System.out.println("ddddd");
         UserDetailsDTO userDetailsDTO = this.appUserService.getAuthenticatedUserDetails();
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(userDetailsDTO);
+        return ResponseEntity.ok(userDetailsDTO);
     }
 
     @PutMapping("/details")
     public ResponseEntity<UserDetailsDTO> updateUserInformation(@NotNull @RequestBody UserDetailsDTO user){
         AppUser updatedUser = appUserService.updateUserDetails(user);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(new UserDetailsDTO(updatedUser));
+        return ResponseEntity.ok(new UserDetailsDTO(updatedUser));
     }
 
     @PutMapping("/password")
     public ResponseEntity<String> updateUserPassword(@NotNull @RequestBody UserPasswordDTO userPasswordDTO){
         String token = appUserService.updateUserPassword(userPasswordDTO);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(token);
+        return ResponseEntity.ok(token);
     }
 }

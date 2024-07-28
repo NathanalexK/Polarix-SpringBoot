@@ -2,9 +2,7 @@ package com.example.demo.restController.user;
 
 import com.example.demo.dto.user.UserLoginDTO;
 import com.example.demo.dto.user.UserRegisterDTO;
-import com.example.demo.model.user.AppUser;
-import com.example.demo.repository.user.AppUserRepository;
-import com.example.demo.service.user.AppUserService;
+import com.example.demo.service.user.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,25 +14,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final AppUserService appUserService;
+    private final AuthService authService;
 
-    public AuthController(AppUserService appUserService) {
-        this.appUserService = appUserService;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserRegisterDTO userRegisterDto){
-        String token = appUserService.register(userRegisterDto);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(token);
+        String token = authService.register(userRegisterDto);
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserLoginDTO userLoginDTO){
-        String token = appUserService.authenticate(userLoginDTO);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(token);
+        String token = authService.authenticate(userLoginDTO);
+        return ResponseEntity.ok(token);
     }
 }

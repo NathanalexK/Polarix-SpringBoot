@@ -29,12 +29,14 @@ public class AppUserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    public AppUserService(AppUserRepository appUserRepository, AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder) {
+    public AppUserService(AppUserRepository appUserRepository, AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder, AuthService authService) {
         this.appUserRepository = appUserRepository;
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = passwordEncoder;
+        this.authService = authService;
     }
 
     private AppUser createAppUserFromUserDetailsDto(UserDetailsDTO userDto){
@@ -49,51 +51,6 @@ public class AppUserService {
         return user;
     }
 
-    public String authenticate(UserLoginDTO userDto){
-        String username = userDto.getUsername();
-        String password = userDto.getPassword();
-
-        AppUser user = appUserRepository.findAppUserByUsername(username);
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-            return jwtTokenProvider.createToken(username, user.getRole());
-        } catch (AuthenticationException e){
-            throw new CustomHttpException("Invalid authentication for username: " + username + " with password: " + password + "!", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    public String register(UserRegisterDTO userRegisterDTO) {
-        String username = userRegisterDTO.getUsername();
-        String email = userRegisterDTO.getEmail();
-        String password = userRegisterDTO.getPassword();
-        LocalDate birthdate = userRegisterDTO.getBirthdate();
-        AppUserSex sex = AppUserSex.valueOf(userRegisterDTO.getSex());
-
-        AppUser user = new AppUser();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRole(AppUserRole.ROLE_CLIENT);
-        user.setCreatedAt(LocalDate.now());
-        appUserRepository.save(user);
-
-        return this.authenticate(new UserLoginDTO(username, password));
-    }
-
-    public UserDetailsDTO getAuthenticatedUserDetails(){
-        return new UserDetailsDTO(this.getAuthenticatedAppUser());
-    }
-
-    public AppUser getAuthenticatedAppUser()
-            throws RuntimeException {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        AppUser authenticatedUser = appUserRepository.findAppUserByUsername(auth.getName());
-
-        if(authenticatedUser != null)
-            return authenticatedUser;
-        throw new CustomHttpException("No account is logged in!", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     public AppUser updateUserDetails(UserDetailsDTO userDetailsDTO){
         AppUser user =  this.createAppUserFromUserDetailsDto(this.getAuthenticatedUserDetails());
         user.setUsername(userDetailsDTO.getUsername());
@@ -105,14 +62,19 @@ public class AppUserService {
         return appUserRepository.save(user);
     }
 
+    public UserDetailsDTO getAuthenticatedUserDetails(){
+        return new UserDetailsDTO(this.authService.getAuthenticatedAppUser());
+    }
+
+
     @Transactional
     public String updateUserPassword(UserPasswordDTO userPasswordDTO){
-        AppUser appUser = this.getAuthenticatedAppUser();
+        AppUser appUser = this.authService.getAuthenticatedAppUser();
 
         if(passwordEncoder.matches(userPasswordDTO.getCurrentPassword(), appUser.getPassword())){
             appUser.setPassword(passwordEncoder.encode(userPasswordDTO.getNewPassword()));
             appUserRepository.save(appUser);
-            return this.authenticate(new UserLoginDTO(appUser.getUsername(), userPasswordDTO.getNewPassword()));
+            return this.authService.authenticate(new UserLoginDTO(appUser.getUsername(), userPasswordDTO.getNewPassword()));
         }
 
         throw new CustomHttpException("Invalid Password!", HttpStatus.INTERNAL_SERVER_ERROR);
