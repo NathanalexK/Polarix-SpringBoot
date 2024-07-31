@@ -10,6 +10,7 @@ import com.example.demo.model.user.AppUser;
 import com.example.demo.model.user.AppUserRole;
 import com.example.demo.model.user.AppUserSex;
 import com.example.demo.repository.user.AppUserRepository;
+import com.example.demo.service.util.ImageUploaderService;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +20,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 
 @Service
@@ -30,13 +34,15 @@ public class AppUserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
+    private final ImageUploaderService imageUploaderService;
 
-    public AppUserService(AppUserRepository appUserRepository, AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder, AuthService authService) {
+    public AppUserService(AppUserRepository appUserRepository, AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder, AuthService authService, ImageUploaderService imageUploaderService) {
         this.appUserRepository = appUserRepository;
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
+        this.imageUploaderService = imageUploaderService;
     }
 
     private AppUser createAppUserFromUserDetailsDto(UserDetailsDTO userDto){
@@ -51,13 +57,14 @@ public class AppUserService {
         return user;
     }
 
+    @Transactional
     public AppUser updateUserDetails(UserDetailsDTO userDetailsDTO){
         AppUser user =  this.createAppUserFromUserDetailsDto(this.getAuthenticatedUserDetails());
         user.setUsername(userDetailsDTO.getUsername());
         user.setEmail(userDetailsDTO.getEmail());
         user.setBiography(userDetailsDTO.getBiography());
         user.setPicture(userDetailsDTO.getPicture());
-        user.setBirthdate(userDetailsDTO.getBirthdate());
+        user.setBirthdate(LocalDate.parse(userDetailsDTO.getBirthdate()));
         user.setSex(AppUserSex.valueOf(userDetailsDTO.getSex()));
         return appUserRepository.save(user);
     }
@@ -78,5 +85,13 @@ public class AppUserService {
         }
 
         throw new CustomHttpException("Invalid Password!", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Transactional
+    public AppUser updateProfilePicture(MultipartFile mf) throws IOException {
+        AppUser user = authService.getAuthenticatedAppUser();
+        String urlOfUploadedFile = imageUploaderService.uploadImage(mf, "user/profile");
+        user.setPicture(urlOfUploadedFile);
+        return appUserRepository.save(user);
     }
 }

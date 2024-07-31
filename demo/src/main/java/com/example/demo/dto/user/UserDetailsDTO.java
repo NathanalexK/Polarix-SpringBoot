@@ -11,7 +11,7 @@ public class UserDetailsDTO {
     private String email;
     private String biography;
     private String picture;
-    private LocalDate birthdate;
+    private String birthdate;
     private String sex;
 
     public UserDetailsDTO(){
@@ -22,7 +22,7 @@ public class UserDetailsDTO {
         this.setEmail(user.getEmail());
         this.setBiography(user.getBiography());
         this.setPicture(user.getPicture());
-        this.setBirthdate(user.getBirthdate());
+        this.setBirthdate(String.valueOf(user.getBirthdate()));
         this.setSex(user.getSex().name());
     }
 }

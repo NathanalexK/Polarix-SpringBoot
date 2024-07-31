@@ -30,7 +30,7 @@ public class SecurityConfiguration {
         http.csrf().disable()
                 .authorizeRequests()
                 .requestMatchers("/admin/**").hasAuthority(AppUserRole.ROLE_ADMIN.getAuthority())
-                .requestMatchers("/auth/**", "/ws/**").permitAll()
+                .requestMatchers("/auth/**", "/ws/**", "/resources/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
