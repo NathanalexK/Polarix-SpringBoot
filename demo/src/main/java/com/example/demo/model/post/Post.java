@@ -30,4 +30,14 @@ public class Post {
 
     @Column(name = "id_privacy", nullable = false)
     private Privacy privacy;
+
+    @Column(name = "like_count")
+    private Integer likeCount;
+
+    @Column(name = "comment_count")
+    private Integer commentCount;
+
+    public boolean equals(Post p){
+        return this.getId() == p.getId();
+    }
 }

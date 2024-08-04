@@ -31,8 +31,8 @@ public class PostController {
             @PathVariable("pageSize") Integer pageSize
     ) throws InterruptedException {
 
-        Thread.sleep(500);
-        Pagination<PostDetailsDTO> pagination = postService.getAllPostDTO(pageNumber, pageSize);
+//        Thread.sleep(500);
+        Pagination<PostDetailsDTO> pagination = postService.getPostPageableWithLikeStatus(pageNumber, pageSize);
         return ResponseEntity.ok(pagination);
     }
 

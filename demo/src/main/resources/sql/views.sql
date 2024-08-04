@@ -17,16 +17,20 @@ on app_user.id = a.user
 ;
 
 select
-    id_post,
+    post.*,
+    app_user.picture,
     case when id_post is null
     then false
     else true
     end as is_liked
 from post
+join app_user
+on post.id_user = app_user.id
 left join (
     select
         id_post
     from post_like
+    where id_user = :id_user
 ) as pl
 on post.id = pl.id_post
 

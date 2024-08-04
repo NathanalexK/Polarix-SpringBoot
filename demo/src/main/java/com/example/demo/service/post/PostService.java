@@ -2,12 +2,16 @@ package com.example.demo.service.post;
 
 import com.example.demo.dto.friend.FriendRowDTO;
 import com.example.demo.dto.post.PostDetailsDTO;
+import com.example.demo.dto.post.PostLikeActionDTO;
 import com.example.demo.dto.post.PostPublicationDTO;
+import com.example.demo.exception.CustomHttpException;
 import com.example.demo.model.misc.Notification;
 import com.example.demo.model.post.Post;
+import com.example.demo.model.post.PostLike;
 import com.example.demo.model.user.AppUser;
 import com.example.demo.model.user.Friend;
 import com.example.demo.model.user.Privacy;
+import com.example.demo.repository.post.PostLikeRepository;
 import com.example.demo.repository.post.PostRepository;
 import com.example.demo.repository.user.FriendRepository;
 import com.example.demo.service.user.AuthService;
@@ -19,6 +23,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -35,15 +40,17 @@ public class PostService {
     private final FriendRepository friendRepository;
     private final FriendService friendService;
     private final WebSocketService webSocketService;
+    private final PostLikeRepository postLikeRepository;
 
     public PostService(AuthService authService, ImageUploaderService imageUploaderService,
-                       PostRepository postRepository, FriendRepository friendRepository, FriendService friendService, WebSocketService webSocketService) {
+                       PostRepository postRepository, FriendRepository friendRepository, FriendService friendService, WebSocketService webSocketService, PostLikeRepository postLikeRepository) {
         this.authService = authService;
         this.imageUploaderService = imageUploaderService;
         this.postRepository = postRepository;
         this.friendRepository = friendRepository;
         this.friendService = friendService;
         this.webSocketService = webSocketService;
+        this.postLikeRepository = postLikeRepository;
     }
 
     @Transactional
@@ -97,5 +104,43 @@ public class PostService {
         pagination.setTotalElements(postPage.getNumberOfElements());
 
         return pagination;
+    }
+
+    public Pagination<PostDetailsDTO> getPostPageableWithLikeStatus(Integer pageNumber, Integer pageSize){
+        AppUser user = authService.getAuthenticatedAppUser();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<PostDetailsDTO> page = postRepository.findAllPostPageableWithLikeStatus(user.getId(), pageable);
+        return new Pagination<PostDetailsDTO>(page);
+    }
+
+    @Transactional
+    public PostLikeActionDTO likePost(Integer idPost){
+        AppUser user = authService.getAuthenticatedAppUser();
+        Post post = postRepository.findById(idPost).orElse(null);
+
+        if(post == null) throw new CustomHttpException("Invalid post id!", HttpStatus.INTERNAL_SERVER_ERROR);
+
+        PostLike postLike = postLikeRepository.findPostLikeByPostAndUser(post.getId(), user.getId());
+        PostLikeActionDTO action = new PostLikeActionDTO();
+        action.setIdPost(post.getId());
+
+        if(postLike == null) {
+            postLike = new PostLike(user, post);
+            postLikeRepository.save(postLike);
+            postRepository.incrementLike(post.getId());
+            action.setIsLike(true);
+            action.setLikeCount(post.getLikeCount() + 1);
+            webSocketService.sendNotification(
+                    "/topic/user/" + post.getUser().getUsername(),
+                    Notification.info("Post Like", String.format("<b>%s</b> Liked your Post!", user.getUsername()))
+            );
+        }
+        else {
+            postLikeRepository.delete(postLike);
+            postRepository.decrementLike(post.getId());
+            action.setIsLike(false);
+            action.setLikeCount(post.getLikeCount() - 1);
+        }
+        return action;
     }
 }
