@@ -24,12 +24,14 @@ ALTER TABLE
     ADD PRIMARY KEY ("id");
 CREATE TABLE "post"
 (
-    "id"         bigserial    NOT NULL,
-    "id_user"    BIGINT       NOT NULL,
-    "date"       DATE         NOT NULL,
-    "text"       BIGINT       NOT NULL,
-    "picture"    VARCHAR(255) NOT NULL,
-    "id_privacy" SMALLINT     NOT NULL
+    "id"            bigserial    NOT NULL,
+    "id_user"       BIGINT       NOT NULL,
+    "date"          DATE         NOT NULL,
+    "text"          BIGINT       NOT NULL,
+    "picture"       VARCHAR(255) NULL,
+    "id_privacy"    SMALLINT     NOT NULL,
+    "like_count"    INTEGER      NOT NULL DEFAULT 0,
+    "comment_count" INTEGER      NOT NULL DEFAULT 0
 );
 ALTER TABLE
     "post"
@@ -57,7 +59,7 @@ CREATE TABLE "friend"
     "id"           bigserial NOT NULL,
     "id_sender"    BIGINT    NOT NULL,
     "id_receiver"  BIGINT    NOT NULL,
-    "date_send"    DATE      NOT NULL       DEFAULT current_date,
+    "date_send"    DATE      NOT NULL DEFAULT current_date,
     "date_confirm" DATE      NULL
 );
 ALTER TABLE

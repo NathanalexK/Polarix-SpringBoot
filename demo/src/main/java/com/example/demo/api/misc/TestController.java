@@ -1,4 +1,4 @@
-package com.example.demo.restController.misc;
+package com.example.demo.api.misc;
 
 
 import com.example.demo.model.misc.Notification;

@@ -1,11 +1,10 @@
-package com.example.demo.restController.user;
+package com.example.demo.api.user;
 
 import com.example.demo.dto.user.UserDetailsDTO;
 import com.example.demo.dto.user.UserPasswordDTO;
 import com.example.demo.model.user.AppUser;
 import com.example.demo.service.user.AppUserService;
 import com.sun.istack.NotNull;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

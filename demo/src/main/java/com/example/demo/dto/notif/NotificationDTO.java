@@ -14,7 +14,7 @@ public class NotificationDTO {
 
     public NotificationDTO(Notification notification){
         this.setType(notification.getType().getNotificationType());
-        this.setType(notification.getTitle());
+        this.setTitle(notification.getTitle());
         this.setContent(notification.getContent());
     }
 }

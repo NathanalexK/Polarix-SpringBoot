@@ -1,11 +1,7 @@
 package com.example.demo.service.util;
 
-import com.example.demo.DemoApplication;
-import com.example.demo.util.ImageCompressor;
 import com.example.demo.util.UUIDGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.system.ApplicationHome;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,27 +35,22 @@ public class ImageUploaderService {
             String[] split =  originalFileName.split("\\.");
             fileExtension = split[split.length - 1];
         }
-//        String dirPath = UPLOAD_DIR + prefixPath;
 
-        String dirPath = createDirectory(prefixPath);
-//        System.out.println(directory.toURI());
+        createDirectoryIfNotExist(prefixPath);
 
         String uuid = UUIDGenerator.generateUUID();
-        url = dirPath + "/" + uuid + "." + fileExtension;
+        url = prefixPath + "/" + uuid + "." + fileExtension;
 
-        Path path = Paths.get(url);
+        Path path = Paths.get(UPLOAD_DIR, url);
         Files.write(path, originalImage);
         return url;
     }
 
-    private String createDirectory(String prefixPath)
+    private Path createDirectoryIfNotExist(String prefixPath)
             throws IOException {
-//        Resource resource = resourceLoader.getResource("res");
-//        System.out.println(resource.getURL());
-//        ApplicationHome home = new ApplicationHome(DemoApplication.class);
-//        File directory = new File("res" + "/" + prefixPath);
-        File directory = Paths.get("upload", prefixPath).toFile();
-//        File directory = new File(home.getDir(), "../../src/main/resources/static/" + UPLOAD_DIR + prefixPath);
+        Path path = Paths.get(UPLOAD_DIR, prefixPath);
+        File directory = path.toFile();
+
         if(!directory.exists()){
             if(directory.mkdirs()){
                 System.out.println("Directory created: " + directory.getAbsolutePath());
@@ -70,7 +61,6 @@ public class ImageUploaderService {
             System.out.println("Directory already created");
         }
 
-        return directory.getCanonicalPath();
-
+        return path;
     }
 }

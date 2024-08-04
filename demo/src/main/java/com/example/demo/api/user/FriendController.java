@@ -1,4 +1,4 @@
-package com.example.demo.restController.user;
+package com.example.demo.api.user;
 
 import com.example.demo.dto.friend.*;
 import com.example.demo.model.misc.Notification;
