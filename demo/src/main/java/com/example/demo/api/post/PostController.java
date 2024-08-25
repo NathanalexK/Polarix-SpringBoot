@@ -8,6 +8,7 @@ import com.example.demo.model.post.Post;
 import com.example.demo.model.user.Friend;
 import com.example.demo.service.post.PostService;
 import com.example.demo.util.Pagination;
+import com.sun.istack.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +34,22 @@ public class PostController {
 
 //        Thread.sleep(500);
         Pagination<PostDetailsDTO> pagination = postService.getPostPageableWithLikeStatus(pageNumber, pageSize);
+        return ResponseEntity.ok(pagination);
+    }
+
+    @GetMapping("/details/{id}")
+    public ResponseEntity<PostDetailsDTO> getPost(@NotNull @PathVariable("id") Integer idPost) {
+        PostDetailsDTO postDetailsDTO = postService.getPostById(idPost);
+        return ResponseEntity.ok(postDetailsDTO);
+    }
+
+    @GetMapping("user/{username}/{pageNumber}/{pageSize}")
+    public ResponseEntity<Pagination<PostDetailsDTO>> getAllPostByUser(
+            @NotNull @PathVariable("username") String username,
+            @NotNull @PathVariable("pageNumber") Integer pageNumber,
+            @NotNull @PathVariable("pageSize") Integer pageSize
+    ) {
+        Pagination<PostDetailsDTO> pagination = postService.getAllPostFromUserWithStatusPageable(username, pageNumber, pageSize);
         return ResponseEntity.ok(pagination);
     }
 

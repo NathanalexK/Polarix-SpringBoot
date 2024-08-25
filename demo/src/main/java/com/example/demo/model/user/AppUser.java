@@ -19,6 +19,9 @@ public class AppUser {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
+    @Column(name = "name", nullable = false)
+    private String name;
+
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 

@@ -1,10 +1,13 @@
 package com.example.demo.api.user;
 
 import com.example.demo.dto.friend.*;
+import com.example.demo.dto.user.UserSimpleDetailsDTO;
 import com.example.demo.model.misc.Notification;
 import com.example.demo.model.user.Friend;
+import com.example.demo.service.user.AppUserService;
 import com.example.demo.service.user.FriendService;
 import com.example.demo.service.util.WebSocketService;
+import com.example.demo.util.Pagination;
 import com.sun.istack.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,17 +20,19 @@ public class FriendController {
 
     private final FriendService friendService;
     private final WebSocketService webSocketService;
+    private final AppUserService appUserService;
 
-    public FriendController(FriendService friendService, WebSocketService webSocketService) {
+    public FriendController(FriendService friendService, WebSocketService webSocketService, AppUserService appUserService) {
         this.friendService = friendService;
         this.webSocketService = webSocketService;
+        this.appUserService = appUserService;
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<List<FriendRowDTO>> getAuthenticatedUserFriend(){
-        List<FriendRowDTO> friendDTOList = friendService.getFriendListByAuthenticatedUser();
-        return ResponseEntity.ok(friendDTOList);
-    }
+//    @GetMapping("/list")
+//    public ResponseEntity<List<FriendRowDTO>> getAuthenticatedUserFriend(){
+//        List<FriendRowDTO> friendDTOList = friendService.getFriendListByAuthenticatedUser();
+//        return ResponseEntity.ok(friendDTOList);
+//    }
 
     @GetMapping("/request")
     public ResponseEntity<FriendRequestListDTO> getAuthenticatedFriendRequest(){
@@ -58,8 +63,28 @@ public class FriendController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Void> deletFriend(@NotNull @RequestBody SendFriendActionDTO sendFriendActionDTO){
-        friendService.deleteFriend(sendFriendActionDTO);
+    public ResponseEntity<Void> deleteFriend(@NotNull @RequestParam("username") String username){
+        friendService.deleteFriend(username);
         return ResponseEntity.ok(null);
+    }
+
+    @GetMapping("/list/{username}/{pageNumber}/{pageSize}")
+    public ResponseEntity<Pagination<UserSimpleDetailsDTO>> getAllFriend(
+        @NotNull @PathVariable("username") String username,
+        @NotNull @PathVariable("pageNumber") Integer pageNumber,
+        @NotNull @PathVariable("pageSize") Integer pageSize
+    ) {
+        Pagination<UserSimpleDetailsDTO> pagination = appUserService.getFriendByUsername(username, pageNumber, pageSize);
+        return ResponseEntity.ok(pagination);
+    }
+
+    @GetMapping("/request/list/{username}/{pageNumber}/{pageSize}")
+    public ResponseEntity<Pagination<UserSimpleDetailsDTO>> getAllFriendRequest(
+        @NotNull @PathVariable("username") String username,
+        @NotNull @PathVariable("pageNumber") Integer pageNumber,
+        @NotNull @PathVariable("pageSize") Integer pageSize
+    ) {
+        Pagination<UserSimpleDetailsDTO> pagination = appUserService.getFriendRequestByUsername(username, pageNumber, pageSize);
+        return ResponseEntity.ok(pagination);
     }
 }

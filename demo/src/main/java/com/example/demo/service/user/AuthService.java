@@ -9,6 +9,7 @@ import com.example.demo.model.user.AppUser;
 import com.example.demo.model.user.AppUserRole;
 import com.example.demo.model.user.AppUserSex;
 import com.example.demo.repository.user.AppUserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 public class AuthService {
@@ -34,6 +36,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public String authenticate(UserLoginDTO userDto){
         String username = userDto.getUsername();
         String password = userDto.getPassword();
@@ -41,6 +44,8 @@ public class AuthService {
         AppUser user = appUserRepository.findAppUserByUsername(username);
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            user.setLastOnline(null);
+            appUserRepository.save(user);
             return jwtTokenProvider.createToken(username, user.getRole());
         } catch (AuthenticationException e){
             throw new CustomHttpException("Invalid authentication for username: " + username + " with password: " + password + "!", HttpStatus.INTERNAL_SERVER_ERROR);

@@ -7,6 +7,8 @@ import java.time.LocalDate;
 
 @Data
 public class UserDetailsDTO {
+    private Integer id;
+    private String name;
     private String username;
     private String email;
     private String biography;
@@ -18,6 +20,8 @@ public class UserDetailsDTO {
     }
 
     public UserDetailsDTO(AppUser user){
+        this.setId(user.getId());
+        this.setName(user.getName());
         this.setUsername(user.getUsername());
         this.setEmail(user.getEmail());
         this.setBiography(user.getBiography());

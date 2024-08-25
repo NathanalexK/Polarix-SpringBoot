@@ -20,4 +20,8 @@ public class WebSocketService {
     public void sendNotification(String destination, Notification notification){
         this.send(destination, new NotificationDTO(notification));
     }
+
+    public void sendNotificationToUser(String username, Notification notification) {
+        this.sendNotification("/topic/user/" + username, notification);
+    }
 }

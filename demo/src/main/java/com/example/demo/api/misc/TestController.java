@@ -4,6 +4,7 @@ package com.example.demo.api.misc;
 import com.example.demo.model.misc.Notification;
 import com.example.demo.service.util.ImageUploaderService;
 import com.example.demo.service.util.WebSocketService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,6 +38,11 @@ public class TestController {
             }
         }).start();
         return "ok";
+    }
+
+    @GetMapping("/simpleTest")
+    public ResponseEntity<String> swingTest(){
+        return ResponseEntity.ok("Hello from Spring");
     }
 
     @RequestMapping("/image")

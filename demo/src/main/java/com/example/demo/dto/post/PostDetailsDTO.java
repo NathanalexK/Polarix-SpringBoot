@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class PostDetailsDTO {
     private Integer id;
     private String username;
+    private String name;
     private String userPicture;
     private String date;
     private String text;
@@ -33,6 +34,7 @@ public class PostDetailsDTO {
 
     public PostDetailsDTO(Integer id,
                           String username,
+                          String name,
                           String userPicture,
                           LocalDateTime date,
                           String text,
@@ -43,6 +45,7 @@ public class PostDetailsDTO {
     ) {
         this.id = id;
         this.username = username;
+        this.name = name;
         this.userPicture = userPicture;
         this.date = String.valueOf(date);
         this.text = text;

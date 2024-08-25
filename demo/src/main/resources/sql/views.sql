@@ -33,5 +33,20 @@ left join (
     where id_user = :id_user
 ) as pl
 on post.id = pl.id_post
-
 ;
+
+select * from post;
+
+SELECT
+    u1.id AS id_user,
+    CASE
+        WHEN f1.id IS NULL AND f2.id IS NULL THEN 'NONE'  -- No relationship
+        WHEN f1.id IS NOT NULL AND f1.id_receiver = u1.id AND f1.date_confirm IS NULL THEN 'SEND'  -- Invitation sent by current user, but not confirmed
+        WHEN f2.id IS NOT NULL AND f2.id_sender = u1.id AND f2.date_confirm IS NULL THEN 'CONFIRM'  -- Invitation received by current user, but not answered
+        WHEN f1.id IS NOT NULL AND f1.date_confirm IS NOT NULL THEN 'FRIEND'  -- They are friends
+        END AS type_relation
+FROM
+    "app_user" u1
+        LEFT JOIN "friend" f1 ON (u1.id = f1.id_receiver OR u1.id = f1.id_sender) -- Join on receiver or sender for invitations
+        LEFT JOIN "friend" f2 ON (u1.id = f2.id_receiver OR u1.id = f2.id_sender) AND f2.date_confirm IS NOT NULL -- Join on receiver or sender for friendship
+WHERE u1.id <> :id;

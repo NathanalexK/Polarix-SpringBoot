@@ -83,12 +83,12 @@ public class FriendService {
     }
 
     @Transactional
-    public void deleteFriend(SendFriendActionDTO sendFriendActionDTO){
+    public void deleteFriend(String username){
         Authentication auth = authService.getAuthenticated();
-        Friend friend = friendRepository.findFriendByTwoUsers(auth.getName(), sendFriendActionDTO.getUsername());
+        Friend friend = friendRepository.findFriendByTwoUsers(auth.getName(), username);
 
         if(friend == null){
-            throw new CustomHttpException("Unknown friend request between sender: " + sendFriendActionDTO.getUsername() + " and receiver: " + auth.getName() + " !", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new CustomHttpException("Unknown friend request between sender: " + username + " and receiver: " + auth.getName() + " !", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         friendRepository.delete(friend);
     }
