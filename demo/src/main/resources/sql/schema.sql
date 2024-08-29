@@ -59,7 +59,7 @@ CREATE TABLE "friend"
     "id"           bigserial NOT NULL,
     "id_sender"    BIGINT    NOT NULL,
     "id_receiver"  BIGINT    NOT NULL,
-    "date_send"    DATE      NOT NULL DEFAULT current_date,
+    "date_send"    DATE      NOT NULL DEFAULT CURRENT_DATE,
     "date_confirm" DATE      NULL
 );
 ALTER TABLE
@@ -136,6 +136,44 @@ CREATE TABLE "sex"
     "id"   SMALLINT    NOT NULL,
     "name" VARCHAR(20) NOT NULL
 );
+CREATE TABLE "conversation_type"
+(
+    "id" SMALLINT PRIMARY KEY NOT NULL,
+    "name" VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE "conversation"
+(
+    "id"                BIGSERIAL PRIMARY KEY NOT NULL,
+    "name"              VARCHAR(100)       DEFAULT 'Conversation',
+    "creator"           BIGINT                NULL REFERENCES app_user (id),
+    "last_user"         BIGINT REFERENCES app_user (id),
+    "conversation_type" SMALLINT REFERENCES conversation_type(id),
+    "id_last_message"   BIGINT,
+    "created_at"        TIMESTAMP          DEFAULT CURRENT_TIMESTAMP,
+    "updated_at"        TIMESTAMP          DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE "conversation" ADD FOREIGN KEY(id_last_message) REFERENCES message(id);
+
+CREATE TABLE "conversation_member"
+(
+    "id"                   BIGSERIAL PRIMARY KEY NOT NULL,
+    "id_conversation"      BIGINT REFERENCES conversation (id),
+    "id_user"              BIGINT REFERENCES app_user (id),
+    "id_last_seen_message" BIGINT,
+    "created_at"           TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE "conversation_member" ADD FOREIGN KEY(id_last_seen_message) REFERENCES message(id);
+
+CREATE TABLE "message"
+(
+    "id"              BIGSERIAL PRIMARY KEY NOT NULL,
+    "id_sender"       BIGINT REFERENCES app_user (id),
+    "id_conversation" BIGINT REFERENCES conversation (id),
+    "content"         TEXT,
+    "created_at"      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 ALTER TABLE
     "sex"
     ADD PRIMARY KEY ("id");

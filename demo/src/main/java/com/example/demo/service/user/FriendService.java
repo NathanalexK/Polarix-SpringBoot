@@ -4,10 +4,12 @@ import com.example.demo.dto.friend.SendFriendActionDTO;
 import com.example.demo.dto.friend.SendFriendRequestDTO;
 import com.example.demo.dto.friend.FriendRowDTO;
 import com.example.demo.exception.CustomHttpException;
+import com.example.demo.model.misc.Notification;
 import com.example.demo.model.user.AppUser;
 import com.example.demo.model.user.Friend;
 import com.example.demo.repository.user.AppUserRepository;
 import com.example.demo.repository.user.FriendRepository;
+import com.example.demo.service.util.WebSocketService;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,21 +27,30 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final AppUserRepository appUserRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final WebSocketService webSocketService;
 
-    public FriendService(AuthService authService, FriendRepository friendRepository, AppUserRepository appUserRepository, JdbcTemplate jdbcTemplate) {
+    public FriendService(AuthService authService, FriendRepository friendRepository, AppUserRepository appUserRepository, JdbcTemplate jdbcTemplate, WebSocketService webSocketService) {
         this.authService = authService;
         this.friendRepository = friendRepository;
         this.appUserRepository = appUserRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.webSocketService = webSocketService;
     }
 
-    public Friend sendFriendRequest(SendFriendRequestDTO sendFriendRequestDTO) {
+    public Friend sendFriendRequest(String username) {
         AppUser currentUser = authService.getAuthenticatedAppUser();
-        AppUser request = appUserRepository.findAppUserByUsername(sendFriendRequestDTO.getReceiver());
+        AppUser request = appUserRepository.findAppUserByUsername(username);
+
+        Friend friendCheck = friendRepository.findFriendByTwoUsers(currentUser.getUsername(), username);
 
         if (request == null) {
-            throw new CustomHttpException("Unknown user for username: " + sendFriendRequestDTO.getReceiver() + " !", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new CustomHttpException("Unknown user for username: " + username + " !", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        if(friendCheck != null) {
+            throw new CustomHttpException("Friend already requested!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
 
         try {
             Friend friend = new Friend();
@@ -47,16 +58,21 @@ public class FriendService {
             friend.setReceiver(request);
             friend.setDateSend(LocalDate.now());
             friend.setDateConfirm(null);
-            return friendRepository.save(friend);
+            Friend saved = friendRepository.save(friend);
+            webSocketService.sendNotification(
+                "/topic/user/" + username,
+                Notification.info("Friend Request", "<b>" + currentUser.getName() + "</b> send you an invitation")
+            );
+            return saved;
         } catch (Exception e) {
             throw new CustomHttpException("Friend request already sended!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Transactional
-    public Friend acceptFriendRequest(SendFriendActionDTO sendFriendActionDTO) {
+    public Friend acceptFriendRequest(String username) {
         Authentication auth = authService.getAuthenticated();
-        return acceptFriendRequest(auth.getName(), sendFriendActionDTO.getUsername());
+        return acceptFriendRequest(username, auth.getName());
     }
 
     @Transactional
@@ -68,16 +84,21 @@ public class FriendService {
         }
 
         friend.setDateConfirm(LocalDate.now());
-        return friendRepository.save(friend);
+        Friend saved = friendRepository.save(friend);
+        webSocketService.sendNotification(
+                "/topic/user/" + sender,
+                Notification.info("Friend Accepted", "<b>" + friend.getSender().getName() + "</b> accepted your invitation")
+        );
+        return saved;
     }
 
     @Transactional
-    public void rejectFriendRequest(SendFriendActionDTO sendFriendActionDTO) {
+    public void rejectFriendRequest(String username) {
         Authentication auth = authService.getAuthenticated();
-        Friend friend = friendRepository.findFriendBySenderAndReceiver(sendFriendActionDTO.getUsername(), auth.getName());
+        Friend friend = friendRepository.findFriendBySenderAndReceiver(username, auth.getName());
 
         if(friend == null){
-            throw new CustomHttpException("Unknown friend request between sender: " + sendFriendActionDTO.getUsername() + " and receiver: " + auth.getName() + " !", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new CustomHttpException("Unknown friend request between sender: " + username + " and receiver: " + auth.getName() + " !", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         friendRepository.delete(friend);
     }

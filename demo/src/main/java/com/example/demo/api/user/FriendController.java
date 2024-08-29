@@ -41,24 +41,25 @@ public class FriendController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<FriendDTO> sendFriendRequest(@NotNull @RequestBody SendFriendRequestDTO sendFriendRequestDTO) {
-        Friend friend = friendService.sendFriendRequest(sendFriendRequestDTO);
+    public ResponseEntity<FriendDTO> sendFriendRequest(@NotNull @RequestParam("username") String username) {
+        Friend friend = friendService.sendFriendRequest(username);
         return ResponseEntity.ok(new FriendDTO(friend));
     }
 
-    @PutMapping("/accept")
-    public ResponseEntity<FriendDTO> acceptFriendRequest(@NotNull @RequestBody SendFriendActionDTO sendFriendActionDTO) {
-        Friend friend = friendService.acceptFriendRequest(sendFriendActionDTO);
-        webSocketService.sendNotification(
-                "/topic/user/" + sendFriendActionDTO.getUsername(),
-                Notification.info("Friend Accepted", friend.getSender().getUsername() + " accepted your invitation")
-        );
+    @PostMapping("/accept")
+    public ResponseEntity<FriendDTO> acceptFriendRequest(@NotNull @RequestParam("username") String username) {
+        Friend friend = friendService.acceptFriendRequest(username);
+        System.out.println("ok");
+//        webSocketService.sendNotification(
+//                "/topic/user/" + username,
+//                Notification.info("Friend Accepted", friend.getSender().getUsername() + " accepted your invitation")
+//        );
         return ResponseEntity.ok(new FriendDTO(friend));
     }
 
     @DeleteMapping("/reject")
-    public ResponseEntity<Void> rejectFriendRequest(@NotNull @RequestBody SendFriendActionDTO sendFriendActionDTO){
-        friendService.rejectFriendRequest(sendFriendActionDTO);
+    public ResponseEntity<Void> rejectFriendRequest(@NotNull @RequestParam("username") String username){
+        friendService.rejectFriendRequest(username);
         return ResponseEntity.ok(null);
     }
 
@@ -87,4 +88,16 @@ public class FriendController {
         Pagination<UserSimpleDetailsDTO> pagination = appUserService.getFriendRequestByUsername(username, pageNumber, pageSize);
         return ResponseEntity.ok(pagination);
     }
+
+    @GetMapping("/not/list/{username}/{pageNumber}/{pageSize}")
+    public ResponseEntity<Pagination<UserSimpleDetailsDTO>> getAllNotFriend(
+        @NotNull @PathVariable("username") String username,
+        @NotNull @PathVariable("pageNumber") Integer pageNumber,
+        @NotNull @PathVariable("pageSize") Integer pageSize
+    ) {
+        Pagination<UserSimpleDetailsDTO> pagination = appUserService.getNotFriendByUsername(username, pageNumber, pageSize);
+        return ResponseEntity.ok(pagination);
+    }
+
+
 }

@@ -69,54 +69,56 @@ public interface AppUserRepository extends JpaRepository<AppUser, Integer> {
 
     @Query("""
         SELECT new com.example.demo.dto.user.UserSimpleDetailsDTO(
-            u1,
-            CASE
-                WHEN f1.id IS NULL AND f2.id IS NULL THEN 'NONE'  
-                WHEN f1.id IS NOT NULL AND f1.receiver.id = u1.id AND f1.dateConfirm IS NULL THEN 'SEND'  
-                WHEN f2.id IS NOT NULL AND f2.sender.id = u1.id AND f2.dateConfirm IS NULL THEN 'CONFIRM' 
-                WHEN f1.id IS NOT NULL AND f1.dateConfirm IS NOT NULL THEN 'FRIEND'
-                END
-        )   FROM
-            AppUser u1
-                LEFT JOIN Friend f1 ON (u1.id = f1.receiver.id OR u1.id = f1.sender.id) 
-                LEFT JOIN Friend f2 ON (u1.id = f2.receiver.id OR u1.id = f2.sender.id) AND f2.dateConfirm IS NOT NULL 
-        WHERE u1.id <> :idUser
+               u,
+               CASE
+                   WHEN f1.id IS NULL AND f2.id IS NULL THEN 'NONE'
+                   WHEN f1.id IS NOT NULL AND f1.dateConfirm IS NULL THEN 'CONFIRM'
+                   WHEN f2.id IS NOT NULL AND f2.dateConfirm IS NULL THEN 'SEND'
+                   WHEN (f1.id IS NOT NULL AND f1.dateConfirm IS NOT NULL) OR
+                        (f2.id IS NOT NULL AND f2.dateConfirm IS NOT NULL) THEN 'FRIEND'
+                   END 
+               )
+        FROM AppUser u
+                 LEFT JOIN Friend f1 ON f1.sender.id = u.id AND f1.receiver.id = :idUser
+                 LEFT JOIN Friend f2 ON f2.receiver.id = u.id AND f2.sender.id = :idUser
+        WHERE u.id <> :idUser
     """)
     public Page<UserSimpleDetailsDTO> findAllUserSimpleDetailsByIdUserPageable(Integer idUser, Pageable pageable);
 
     @Query("""
         SELECT new com.example.demo.dto.user.UserSimpleDetailsDTO(
-            u1,
-            'NONE'
-        )   FROM
-            AppUser u1
-                LEFT JOIN Friend f1 ON (u1.id = f1.receiver.id OR u1.id = f1.sender.id) 
-                LEFT JOIN Friend f2 ON (u1.id = f2.receiver.id OR u1.id = f2.sender.id) AND f2.dateConfirm IS NOT NULL 
-        WHERE u1.id <> :idUser and f1.id IS null and f2.id is NULL
+               u,
+               'NONE'
+        )
+        FROM AppUser u
+                 LEFT JOIN Friend f1 ON f1.sender.id = u.id AND f1.receiver.id = :idUser
+                 LEFT JOIN Friend f2 ON f2.receiver.id = u.id AND f2.sender.id = :idUser
+        WHERE u.id <> :idUser AND f1.id IS NULL AND f2.id IS NULL
     """)
     public Page<UserSimpleDetailsDTO> findAllUserNotFriendByIdUserPageable(Integer idUser, Pageable pageable);
 
     @Query("""
         SELECT new com.example.demo.dto.user.UserSimpleDetailsDTO(
-            u1,
-            'FRIEND'
-        )   FROM
-            AppUser u1
-                LEFT JOIN Friend f1 ON (u1.id = f1.receiver.id OR u1.id = f1.sender.id) 
-                LEFT JOIN Friend f2 ON (u1.id = f2.receiver.id OR u1.id = f2.sender.id) AND f2.dateConfirm IS NOT NULL 
-        WHERE u1.id <> :idUser and f1.id IS NOT NULL
+               u,
+               'FRIEND'
+               )
+        FROM AppUser u
+                 LEFT JOIN Friend f1 ON f1.sender.id = u.id AND f1.receiver.id = :idUser
+                 LEFT JOIN Friend f2 ON f2.receiver.id = u.id AND f2.sender.id = :idUser
+        WHERE u.id <> :idUser AND ((f1.id IS NOT NULL AND f1.dateConfirm IS NOT NULL) OR
+                        (f2.id IS NOT NULL AND f2.dateConfirm IS NOT NULL))
     """)
     public Page<UserSimpleDetailsDTO> findAllFriendByIdUserPageable(Integer idUser, Pageable pageable);
 
     @Query("""
         SELECT new com.example.demo.dto.user.UserSimpleDetailsDTO(
-            u1,
-            'CONFIRM'
-        )   FROM
-            AppUser u1
-                LEFT JOIN Friend f1 ON (u1.id = f1.receiver.id OR u1.id = f1.sender.id) 
-                LEFT JOIN Friend f2 ON (u1.id = f2.receiver.id OR u1.id = f2.sender.id) AND f2.dateConfirm IS NOT NULL 
-        WHERE u1.id <> :idUser AND f2.id IS NOT NULL AND f2.sender.id = u1.id AND f2.dateConfirm IS NULL
+               u,
+               'CONFIRM'
+               )
+        FROM AppUser u
+                 LEFT JOIN Friend f1 ON f1.sender.id = u.id AND f1.receiver.id = :idUser
+                 LEFT JOIN Friend f2 ON f2.receiver.id = u.id AND f2.sender.id = :idUser
+        WHERE u.id <> :idUser AND f1.id IS NOT NULL AND f1.dateConfirm IS NULL
     """)
     public Page<UserSimpleDetailsDTO> findAllFriendRequestByIdUserPageable(Integer idUser, Pageable pageable);
 

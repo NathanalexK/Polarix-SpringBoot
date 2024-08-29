@@ -143,4 +143,13 @@ public class AppUserService {
         Page<UserSimpleDetailsDTO> page = appUserRepository.findAllFriendRequestByIdUserPageable(user.getId(), pageable);
         return new Pagination<UserSimpleDetailsDTO>(page);
     }
+
+    public Pagination<UserSimpleDetailsDTO> getNotFriendByUsername(String username, Integer pageNumber, Integer pageSize){
+        AppUser user = appUserRepository.findAppUserByUsername(username);
+        if(user == null) throw new CustomHttpException("User not found for username: " + username, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<UserSimpleDetailsDTO> page = appUserRepository.findAllUserNotFriendByIdUserPageable(user.getId(), pageable);
+        return new Pagination<UserSimpleDetailsDTO>(page);
+    }
 }
