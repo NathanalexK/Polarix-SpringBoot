@@ -27,7 +27,7 @@ public class Message {
     private String content;
 
     @Column(name = "created_at")
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
 //    @Override
 //    public boolean equals(Message message) {

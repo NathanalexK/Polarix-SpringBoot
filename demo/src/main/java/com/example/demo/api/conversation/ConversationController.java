@@ -1,4 +1,4 @@
-package com.example.demo.api.misc;
+package com.example.demo.api.conversation;
 
 import com.example.demo.dto.conversation.ConversationDTO;
 import com.example.demo.service.conversation.ConversationService;
@@ -9,8 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @RequestMapping("/conversation")
 public class ConversationController {
 
@@ -27,5 +28,11 @@ public class ConversationController {
     ){
         Pagination<ConversationDTO> pagination = conversationService.getAllConversationFromAuthUSer(pageNumber, pageSize);
         return ResponseEntity.ok(pagination);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ConversationDTO> getConversation(@NotNull @PathVariable("id") Integer idConversation) {
+        ConversationDTO conversationDTO = conversationService.getConversationFromAuthUser(idConversation);
+        return ResponseEntity.ok(conversationDTO);
     }
 }

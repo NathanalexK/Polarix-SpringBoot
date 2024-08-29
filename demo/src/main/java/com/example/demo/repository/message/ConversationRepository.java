@@ -11,17 +11,24 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, Integer> {
 
     @Query("""
-    SELECT new com.example.demo.dto.conversation.ConversationDTO(cm) 
-    FROM ConversationMember cm 
-    JOIN FETCH cm.conversation
-    where cm.user.id = :idUser
+        SELECT new com.example.demo.dto.conversation.ConversationDTO(cm) 
+        FROM ConversationMember cm 
+        where cm.user.id = :idUser
     """)
     Page<ConversationDTO> findAllConversationByUserPageable(@Param("idUser") Integer idUser, Pageable pageable);
+
+    @Query("""
+        SELECT new com.example.demo.dto.conversation.ConversationDTO(cm) 
+        FROM ConversationMember cm 
+        where cm.conversation.id = :idConversation AND cm.user.id = :idUser
+    """)
+    Optional<ConversationDTO> findConversationByUserPageable(@Param("idConversation") Integer idConversation, @Param("idUser") Integer idUser);
 
     @Override
     List<Conversation> findAll();
