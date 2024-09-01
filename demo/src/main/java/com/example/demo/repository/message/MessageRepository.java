@@ -16,7 +16,7 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
         SELECT new com.example.demo.dto.conversation.MessageDTO(m, :idUser)
         FROM Message m
         WHERE m.conversation.id = :idConversation
-        ORDER BY m.createdAt DESC
+        ORDER BY m.createdAt ASC 
     """)
     Page<MessageDTO> findAllMessageByIdConversationPageable(
         @Param("idConversation") Integer idConversation,

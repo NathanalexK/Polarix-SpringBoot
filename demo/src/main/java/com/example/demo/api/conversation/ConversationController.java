@@ -35,4 +35,19 @@ public class ConversationController {
         ConversationDTO conversationDTO = conversationService.getConversationFromAuthUser(idConversation);
         return ResponseEntity.ok(conversationDTO);
     }
+
+    @GetMapping("/typing/{idConversation}/{isTyping}")
+    public ResponseEntity<Void> setIsTyping(
+        @NotNull @PathVariable("idConversation") Integer idConversation,
+        @NotNull @PathVariable("isTyping") Boolean isTyping
+    ) {
+        conversationService.setIsTyping(idConversation, isTyping);
+        return ResponseEntity.ok(null);
+    }
+
+    @GetMapping("/visit/{idConversation}")
+    public ResponseEntity<Void> visitConversation(@NotNull @PathVariable("idConversation") Integer idConversation){
+        conversationService.visitConversation(idConversation);
+        return ResponseEntity.ok(null);
+    }
 }

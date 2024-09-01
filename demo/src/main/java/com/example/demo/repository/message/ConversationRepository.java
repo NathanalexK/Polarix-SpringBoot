@@ -2,7 +2,6 @@ package com.example.demo.repository.message;
 
 import com.example.demo.dto.conversation.ConversationDTO;
 import com.example.demo.model.message.Conversation;
-import com.example.demo.util.Pagination;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,6 +19,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, Inte
         SELECT new com.example.demo.dto.conversation.ConversationDTO(cm) 
         FROM ConversationMember cm 
         where cm.user.id = :idUser
+        ORDER BY cm.conversation.lastMessage.createdAt DESC
     """)
     Page<ConversationDTO> findAllConversationByUserPageable(@Param("idUser") Integer idUser, Pageable pageable);
 
@@ -28,7 +28,8 @@ public interface ConversationRepository extends JpaRepository<Conversation, Inte
         FROM ConversationMember cm 
         where cm.conversation.id = :idConversation AND cm.user.id = :idUser
     """)
-    Optional<ConversationDTO> findConversationByUserPageable(@Param("idConversation") Integer idConversation, @Param("idUser") Integer idUser);
+    Optional<ConversationDTO> findConversationByIdAndIsUser(@Param("idConversation") Integer idConversation, @Param("idUser") Integer idUser);
+
 
     @Override
     List<Conversation> findAll();

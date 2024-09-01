@@ -26,6 +26,7 @@ public class ConversationDTO {
 
 
     public ConversationDTO(ConversationMember member) {
+        System.out.println("Here");
         Conversation conversation = member.getConversation();
         this.setId(conversation.getId());
         List<ConversationMember> otherMembers = conversation.getConversationMembers();
@@ -51,7 +52,7 @@ public class ConversationDTO {
         this.setUpdatedAt(String.valueOf(conversation.getUpdatedAt()));
         this.setLastMessage(
             conversation.getLastMessage() != null ?
-            conversation.getLastMessage().getContent() :
+            conversation.getLastMessage().getSender().getName() + ": " + conversation.getLastMessage().getContent() :
             "Polaire: Say Hello!"
         );
         this.setIsSeen(

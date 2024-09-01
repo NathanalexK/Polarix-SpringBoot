@@ -18,5 +18,12 @@ public class UserSimpleDetailsDTO {
         this.setFriendType(FriendType.valueOf(friendType).name());
     }
 
+    public UserSimpleDetailsDTO(AppUser user) {
+        this.setName(user.getName());
+        this.setUsername(user.getUsername());
+        this.setUserPicture(user.getPicture());
+        this.setFriendType(FriendType.FRIEND.name());
+    }
+
 
 }
