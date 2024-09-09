@@ -122,4 +122,7 @@ public interface AppUserRepository extends JpaRepository<AppUser, Integer> {
     """)
     public Page<UserSimpleDetailsDTO> findAllFriendRequestByIdUserPageable(Integer idUser, Pageable pageable);
 
+
+//    public List<>
+
 }
